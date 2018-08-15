@@ -90,7 +90,8 @@ void servoDriveExecuter()
                         if(deltaAz < -180)
                             deltaAz += 360.0;
 
-                        drive_unit->unv->device_setpos_az(drive_unit->unv->device_getpos_az()+ deltaAz); // p1.pos_cmd = p1.curr_pos + deltaAz;
+                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ne ponal
+                        drive_unit->unv->device_setpos_az(/*drive_unit->unv->device_getpos_az()+*/ deltaAz); // p1.pos_cmd = p1.curr_pos + deltaAz;
 
                         float deltaMax = 2.5;
 
@@ -149,7 +150,7 @@ void servoDriveExecuter()
                     double newAz = convert360angle2PlusMinus180(srvDrvInfoA.directrisaAzimuth + komKomA.srv[AZIMUTH].delta);
                    qDebug()<<"servoDriveExecuter отработка клика мыши по шкале азимута командиром newAz:"<<newAz<<"komKomA.servoDriveSimulation:"<<komKomA.servoDriveSimulation;
 
-                  drive_unit->unv->device_setpos_az(convert360angle2PlusMinus180(srvDrvInfoA.directrisaAzimuth + komKomA.srv[AZIMUTH].delta));  //  2018-05-08
+                  drive_unit->unv->device_setpos_az(newAz);  //  2018-05-08
                   srvDrvInfoA.directrisaAzimuth = drive_unit->unv->device_getpos_az();                                                             //  2018-05-08
                 }
                 else
@@ -182,7 +183,7 @@ void servoDriveExecuter()
 //  2018-06-16  if(apyInfoA.rejimPoiskaSNR == RejimPoiskaSNR::POISK_BSP ||      // сканирования было включено,
 //  2018-06-16      apyInfoA.rejimPoiskaSNR == RejimPoiskaSNR::POISK_MSP)        // выключаем сканирование и возвращаем УНВ на директрису
             {
-                drive_unit->unv->device_setpos_az(srvDrvInfoA.directrisaAzimuth);//p1.pos_cmd = srvDrvInfoA.directrisaAzimuth;
+    //            drive_unit->unv->device_setpos_az(srvDrvInfoA.directrisaAzimuth);//p1.pos_cmd = srvDrvInfoA.directrisaAzimuth;
             }
         }        
         else    // офицер наведения включил или поиск или захват

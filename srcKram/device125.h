@@ -37,10 +37,10 @@
 #define max_acc_az_unv 3.0
 #define max_acc_az_unv 3.0
 
-#define cmax_vel_az  18.0*10800
-#define cmax_acc_az  5.0*10800
-#define cmax_vel_um  15.0*10800
-#define cmax_acc_um  5.0*10800
+#define cmax_vel_az  18.0//*10800
+#define cmax_acc_az  5.0//*10800
+#define cmax_vel_um  15.0//*10800
+#define cmax_acc_um  5.0//*10800
 
 #define max_vel_az_p 7.0
 #define max_vel_um_p 4.0
@@ -55,8 +55,9 @@ public:
     ~Device125();
 
 
-    enum device_type {unv,pusk,nodevice};
-    enum device_mode {combat,training};
+    enum device_type {nouse_t,unv,pusk,nodevice};
+    enum device_mode {nouse_m,combat,training};
+    enum pult_status {nouse_p,combat_mode,manual_mode,auto_mode};
 
 
     inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
@@ -93,7 +94,7 @@ public:
 
     inline int32_t double_to_lenze_eps_p_poly( double n) {return ((int)((n-polynom(n))*10000.0));}
 
-    void get_realtime() {time_diff = rt.elapsed();rt.start();}
+ //   void get_realtime() {time_diff = rt.elapsed();rt.start();}
 
     inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
     inline double device_getpos_elv() {return(lenze_to_double (p_receive->enc_angle_pos_elv));}
@@ -114,7 +115,7 @@ public:
     inline void device_elv_dis() {p_send->elv_en = 0;}
     double time_diff;
 
-    int mode=combat;
+    int mode=nouse_m;
     inline void set_mode(int modein) {
                                      if(mode == modein) return;
                                       mode = modein;
@@ -253,7 +254,7 @@ int old_ID_packet;
 /*24 */    int32_t enc_angle_speed_elv ; //DINT 	(32) 		 Угловая скорость по углу места.(по энкодеру)
 /*28 */ uint32_t motor_encoder_az;     //DWORD (32) Энкодер двигателя азимута
 /*32 */ uint32_t motor_encoder_elv;    //DWORD (32) Энкодер двигателя угла места
-/*36 */ uint32_t receive_SDO1;         // SDO 1,2 На прием.
+/*36 */ uint32_t receive_SDO1;         // SDO 1,2 На прием.internal integrator
 /*40 */ uint32_t receive_SDO2;
 /*42 */ uint16_t code_az;       //WORD (16)		Номер кода  в ответе.(азимут).(Номер кода внутри блока управления приводом)
 /*44 */ uint16_t subcode_az;             //WORD (16)		Номер субкода  в ответе.(азимут) (Номер кода внутри блока управления приводом)
@@ -284,7 +285,7 @@ int old_ID_packet;
          k_umV:1,   //14                //угол места предел низ
          k_umn:1,   //15                //угол места предел верх
          b_otb:6,  //16-21                 //Биты с ОТБ 6 только для пушек
-        status_pult:2;
+        status_pult:2;// status pult
 
     //char ID_string[22] = {'S','h','c','h','e','r','b','a','k','o','v','K','r','a','m','a','r','e','n','k','o',0};//{"КрамаренкоЩербаков"};
 

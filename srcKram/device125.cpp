@@ -9,7 +9,7 @@ Device125::Device125(QObject *parent) : QObject(parent)
    exch = new QUdpSocket;
    connect(exch,SIGNAL(readyRead()),this,SLOT(slot_udpServer()));
 
-
+    rt.start();
 
 }
 
@@ -138,35 +138,28 @@ void Device125::slot_udpServer(void)
     while (exch->hasPendingDatagrams()) {
 
     len = exch->readDatagram((char*)&send_tmp,sizeof(send_tmp),&adr,&port_tmp);
-
-
     }
 
     if(len == sizeof(*p_send) && old_ID_packet+1 == send_tmp.ID_packet)
     {
+        p_receive->ID_packet = p_send->ID_packet;
 
      memcpy(p_send,&send_tmp,sizeof(*p_send));
-         timer->start(main_clock_works+time_outs);
+     timer->start(main_clock_works+time_outs);
+       tp_update();
 
 
-   tp_update();
+        tpaz.pos_cmd = p_send->angle_pos_az/10000;
+        tpum.pos_cmd = p_send->angle_pos_elv/10000;
 
-//    tpaz.enable = p_send->az_on?1:0;
-//    tpum.enable = p_send->elv_on?1:0;
 
-    tpaz.pos_cmd = p_send->angle_pos_az;
-    tpum.pos_cmd = p_send->angle_pos_elv;
+    p_receive->enc_angle_pos_az = (int)(tpaz.curr_pos*10000);
+    p_receive->enc_angle_pos_elv = (int)(tpum.curr_pos*10000);
 
-    p_receive->ID_packet = p_send->ID_packet;
-
-    p_receive->enc_angle_pos_az = (int) (tpaz.curr_pos*10000);//*10800;
-    p_receive->enc_angle_pos_elv =(int) (tpum.curr_pos*10000);//*10800;
-    p_receive->motor_encoder_az = (int) (tpaz.curr_pos*10000);//*10000;
-    p_receive->motor_encoder_elv =(int) (tpum.curr_pos*10000);//*10000;
-
-  //  send_packet
+    //  send_packet
     exch->writeDatagram((char*)p_receive,sizeof(*p_receive),adr,port_tmp);
-}
+
+       }
 old_ID_packet = send_tmp.ID_packet;
 }
 
