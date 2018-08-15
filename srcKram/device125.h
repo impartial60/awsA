@@ -46,7 +46,7 @@
 #define max_vel_um_p 4.0
 #define max_acc_az_p 3.0
 #define max_acc_um_p 3.0
- class QObject;
+
 class Device125:public QObject
 {
    Q_OBJECT
@@ -116,6 +116,7 @@ public:
 
     int mode=combat;
     inline void set_mode(int modein) {
+                                     if(mode == modein) return;
                                       mode = modein;
 
                                       if(mode == combat)
@@ -282,7 +283,8 @@ int old_ID_packet;
          k_bz:1,     //13               //концевик заднего балкона
          k_umV:1,   //14                //угол места предел низ
          k_umn:1,   //15                //угол места предел верх
-         b_otb:12;  //16-27                 //Биты с ОТБ 9 только для пушек
+         b_otb:6,  //16-21                 //Биты с ОТБ 6 только для пушек
+        status_pult:2;
 
     //char ID_string[22] = {'S','h','c','h','e','r','b','a','k','o','v','K','r','a','m','a','r','e','n','k','o',0};//{"КрамаренкоЩербаков"};
 

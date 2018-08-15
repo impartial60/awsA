@@ -36,7 +36,7 @@
 #define N_ID_lenze_elv      0x3A // (58)	Привод угла места.
 #define N_ID_PLC            0x39 // (57)	PLC Schneider.
 
-class Drive125:public QObject//,*/QThread
+class Drive125:public QObject
 
 {
     Q_OBJECT
