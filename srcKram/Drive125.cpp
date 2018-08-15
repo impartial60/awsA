@@ -34,23 +34,12 @@ p4->ip_training = QHostAddress(QString("127.0.0.105"));
 
 
     exch = new QUdpSocket;
-    mono1 = new QTimer;
-    mono2 = new QTimer;
-    mono3 = new QTimer;
-    mono4 = new QTimer;
-    mono5 = new QTimer;
 
-    mono1->setSingleShot(true);
-        mono2->setSingleShot(true);
-            mono3->setSingleShot(true);
-                mono4->setSingleShot(true);
-                    mono5->setSingleShot(true);
-
-    connect(mono1,SIGNAL(timeout()),this,SLOT(slot_timeout_unv()));
-    connect(mono2,SIGNAL(timeout()),this,SLOT(slot_timeout_p1()));
-    connect(mono3,SIGNAL(timeout()),this,SLOT(slot_timeout_p2()));
-    connect(mono4,SIGNAL(timeout()),this,SLOT(slot_timeout_p3()));
-    connect(mono5,SIGNAL(timeout()),this,SLOT(slot_timeout_p4()));
+    connect(unv,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_unv()));
+    connect(p1,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p1()));
+    connect(p2,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p2()));
+    connect(p3,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p3()));
+    connect(p4,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p4()));
 
     main_timer = new QTimer;
 
@@ -78,20 +67,20 @@ void Drive125::slot_timer_task(void)
 
     if(p1->get_type() != p1->nodevice){
         p1->set_id_packet(count);
-exch->writeDatagram(p1->get_adr_send(),p1->get_len_send(),*p1->p_ip,port_125);
+        exch->writeDatagram(p1->get_adr_send(),p1->get_len_send(),*p1->p_ip,port_125);
     }
     if(p2->get_type() != p2->nodevice){
         p2->set_id_packet(count);
-exch->writeDatagram(p2->get_adr_send(),p2->get_len_send(),*p2->p_ip,port_125);
+        exch->writeDatagram(p2->get_adr_send(),p2->get_len_send(),*p2->p_ip,port_125);
     }
     if(p3->get_type() != p3->nodevice){
         p3->set_id_packet(count);
-exch->writeDatagram(p3->get_adr_send(),p3->get_len_send(),*p3->p_ip,port_125);
+        exch->writeDatagram(p3->get_adr_send(),p3->get_len_send(),*p3->p_ip,port_125);
     }
 
     if(p4->get_type() != p4->nodevice){
         p4->set_id_packet(count);
-exch->writeDatagram(p4->get_adr_send(),p4->get_len_send(),*p4->p_ip,port_125);
+        exch->writeDatagram(p4->get_adr_send(),p4->get_len_send(),*p4->p_ip,port_125);
 
     }
     count++;
@@ -108,22 +97,22 @@ void Drive125::slot_receive_packet(void)
     len = exch->readDatagram(unv->get_tmp_adr_receive(),unv->get_tmp_len_receive(),&adr,&port_tmp);
 
     if(port_tmp == port_125 && len == unv->get_tmp_len_receive())
-    {
+        {
    if(adr == *unv->p_ip)
    {memcpy(unv->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-     mono1->start(main_clock_works+time_outs);}
+        }
     if(adr == *p1->p_ip)
     {memcpy(p1->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-      mono2->start(main_clock_works+time_outs);}
+        }
       if(adr == *p2->p_ip)
       {memcpy(p2->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-        mono3->start(main_clock_works+time_outs);}
+        }
         if(adr == *p3->p_ip)
         {memcpy(p3->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-          mono4->start(main_clock_works+time_outs);}
+            }
           if(adr == *p4->p_ip)
           {memcpy(p4->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-            mono5->start(main_clock_works+time_outs);}
+            }
 
 
     }

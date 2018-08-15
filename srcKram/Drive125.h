@@ -3,25 +3,11 @@
 
 #define Kramarenko
 
-#include <math.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
+#include <QCoreApplication>
 
 #include "clockrealtime.h"
 #include "device125.h"
 #include "Drive125.h"
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
-#include <sys/times.h>
-#include <signal.h>
-#include <QCoreApplication>
 
 
 
@@ -47,7 +33,6 @@ class Drive125:public QObject
 
     Device125 *unv,*p1,*p2,*p3,*p4;
 
-
 public slots:
 void slot_receive_packet(void);
 void slot_timer_task(void);
@@ -57,14 +42,11 @@ void slot_timeout_p2(void);
 void slot_timeout_p3(void);
 void slot_timeout_p4(void);
 
-
 private:
-
 
 int count=0;
 QUdpSocket *exch;
-QTimer *mono1,*mono2,*mono3,*mono4,*mono5,*main_timer;
-
+QTimer *main_timer;
 
 };// Drive125;
 

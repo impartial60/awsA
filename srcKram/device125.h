@@ -9,21 +9,6 @@
 #include <QtCore/qglobal.h>
 
 #include "clockrealtime.h"
-#include <stdint.h>
-#include <math.h>
-#include <memory.h>
-#include <fcntl.h>
-
-#include <sys/mman.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 
 #define START_PACK _Pragma ("pack(push, 1)")
 #define END_PACK   _Pragma ("pack(pop)")
@@ -37,10 +22,10 @@
 #define max_acc_az_unv 3.0
 #define max_acc_az_unv 3.0
 
-#define cmax_vel_az  18.0//*10800
-#define cmax_acc_az  5.0//*10800
-#define cmax_vel_um  15.0//*10800
-#define cmax_acc_um  5.0//*10800
+#define cmax_vel_az  18.0
+#define cmax_acc_az  5.0
+#define cmax_vel_um  15.0
+#define cmax_acc_um  5.0
 
 #define max_vel_az_p 7.0
 #define max_vel_um_p 4.0
@@ -59,42 +44,7 @@ public:
     enum device_mode {nouse_m,combat,training};
     enum pult_status {nouse_p,combat_mode,manual_mode,auto_mode};
 
-
-    inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
-    inline double lenze_to_double(int32_t n){return (double(n)/10000.0);}
-
-    inline double get_encoder_az(int az) {return (double)az/10800.0;}
-    inline double get_encoder_um(int um) {return (double)um/10800.0;}
-
-    inline double get_resolver_az(int az) {return (double)az/10000.0;}
-    inline double get_resolver_um(int um) {return (double)um/10000.0;}
-
-    inline double get_integrator_az(int irg) {return (double)irg/10000.0;}
-    inline double get_integrator_um(int irg) {return (double)irg/10000.0;}
- //--------------------------------------------------------------------
-    inline double get_encoder_az_p(int az) {return ((360.0/65536.0)*(double)(az&0x0000ffff));}
-    inline double get_encoder_um_p(int um) {return ((360.0/65536.0)*(double)(um&0x0000ffff));}
-
-    inline double get_resolver_az_p(int az) {return (double)az/10000.0;}
-    inline double get_resolver_um_p(int um) {return (double)um/10000.0;}
-
-
-    inline double get_integrator_az_p(int irg) {return (double)irg/10000.0;}
-    inline double get_integrator_um_p(int irg) {return (double)irg/10000.0;}
-
-
-   // inline int32_t double_to_lenze(double n){return ((int)(n*10000));}
-    inline int32_t double_to_lenze_eps(double n){return ((int)(n*10000));}
-
-    inline int32_t double_to_lenze_p(double n){return ((int)(n*10000));}
-    inline int32_t double_to_lenze_eps_p(double n){return ((int)(n*10000));}
-
-    double polynom(double x) {return
- (((x*x*x)*4.51561467696784e-7)-((x*x)*0.000198086819613)+(x*0.02827381765438)-0.040144620068631);}
-
-    inline int32_t double_to_lenze_eps_p_poly( double n) {return ((int)((n-polynom(n))*10000.0));}
-
- //   void get_realtime() {time_diff = rt.elapsed();rt.start();}
+    QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
 
     inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
     inline double device_getpos_elv() {return(lenze_to_double (p_receive->enc_angle_pos_elv));}
@@ -113,9 +63,7 @@ public:
 
     inline void device_elv_en() {p_send->elv_en = 1;}
     inline void device_elv_dis() {p_send->elv_en = 0;}
-    double time_diff;
 
-    int mode=nouse_m;
     inline void set_mode(int modein) {
                                      if(mode == modein) return;
                                       mode = modein;
@@ -153,14 +101,10 @@ public:
                                      }
     inline int get_mode(void){return mode;}
 
-  //  inline uint32_t get_ip_adress() {return *p_ip;}
     inline QHostAddress get_ip_adress() {return *p_ip;}
-
-    int type=nodevice;
 
     inline void set_type(int typein) {type = typein;}
     inline int get_type(void){return type;}
-
 
     inline char * get_adr_send(void) {return (char*)p_send;}
     inline int get_len_send(void) {return sizeof(*p_send);}
@@ -172,17 +116,6 @@ public:
     inline int get_tmp_len_receive(void) {return sizeof(receive_tmp);}
 
     inline void set_id_packet(int pk) {p_send->ID_packet = pk;}
-    inline int  get_id_packet(void) {return p_receive->ID_packet;}
-
-    ClockRealTime rt;
-
-    uint16_t      port_dev = port_125;
-
-   QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
-
-    QUdpSocket *exch;
-    QTimer  *timer;
-
 
 public slots:
 
@@ -193,7 +126,49 @@ signals:
 void sig_timeout(void);
 
 private:
-int old_ID_packet;
+
+    uint16_t port_dev = port_125;
+    int type=nodevice;
+    int mode=nouse_m;
+
+    uint32_t old_ID_packet;
+    QUdpSocket *exch;
+    QTimer  *timer;
+    ClockRealTime rt;
+
+        void sync(void);
+inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
+inline double lenze_to_double(int32_t n){return (double(n)/10000.0);}
+
+inline double get_encoder_az(int az) {return (double)az/10800.0;}
+inline double get_encoder_um(int um) {return (double)um/10800.0;}
+
+inline double get_resolver_az(int az) {return (double)az/10000.0;}
+inline double get_resolver_um(int um) {return (double)um/10000.0;}
+
+inline double get_integrator_az(int irg) {return (double)irg/10000.0;}
+inline double get_integrator_um(int irg) {return (double)irg/10000.0;}
+//--------------------------------------------------------------------
+inline double get_encoder_az_pu(int az) {return ((360.0/65536.0)*(double)(az&0x0000ffff));}
+inline double get_encoder_um_pu(int um) {return ((360.0/65536.0)*(double)(um&0x0000ffff));}
+
+inline double get_resolver_az_pu(int az) {return (double)az/10000.0;}
+inline double get_resolver_um_pu(int um) {return (double)um/10000.0;}
+
+
+inline double get_integrator_az_pu(int irg) {return (double)irg/10000.0;}
+inline double get_integrator_um_pu(int irg) {return (double)irg/10000.0;}
+
+inline int32_t double_to_lenze_az(double n){return ((int)(n*10000));}
+inline int32_t double_to_lenze_eps(double n){return ((int)(n*10000));}
+
+inline int32_t double_to_lenze_az_pu(double n){return ((int)(n*10000));}
+inline int32_t double_to_lenze_eps_pu(double n){return ((int)(n*10000));}
+
+double polynom(double x) {return
+(((x*x*x)*4.51561467696784e-7)-((x*x)*0.000198086819613)+(x*0.02827381765438)-0.040144620068631);}
+
+inline int32_t double_to_lenze_eps_pu_poly( double n) {return ((int)((n-polynom(n))*10000.0));}
 
   //Структура данных обмена — АПУ->УНВ  и пусковых
 
