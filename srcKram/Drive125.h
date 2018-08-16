@@ -3,12 +3,9 @@
 
 #define Kramarenko
 
-#include <QCoreApplication>
-
 #include "clockrealtime.h"
 #include "device125.h"
 #include "Drive125.h"
-
 
 
 #define main_clock_works 20
@@ -46,7 +43,7 @@ private:
 
 int count=0;
 QUdpSocket *exch;
-QTimer *main_timer;
+QTimer *t1,*t2,*t3,*t4,*t5,*main_timer;
 
 };// Drive125;
 

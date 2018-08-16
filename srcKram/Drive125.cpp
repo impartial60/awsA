@@ -32,21 +32,31 @@ p4->ip_training = QHostAddress(QString("127.0.0.105"));
     p4->set_type(p4->nodevice);
     p4->set_mode(p4->training);
 
+        exch = new QUdpSocket;
+        main_timer = new QTimer;
+        t1 = new QTimer;
+        t2 = new QTimer;
+        t3 = new QTimer;
+        t4 = new QTimer;
+        t5 = new QTimer;
 
-    exch = new QUdpSocket;
+        t1->setSingleShot(true);
+        t2->setSingleShot(true);
+        t3->setSingleShot(true);
+        t4->setSingleShot(true);
+        t5->setSingleShot(true);
 
-    connect(unv,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_unv()));
-    connect(p1,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p1()));
-    connect(p2,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p2()));
-    connect(p3,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p3()));
-    connect(p4,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p4()));
-
-    main_timer = new QTimer;
+    connect(t1,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_unv()));
+    connect(t2,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p1()));
+    connect(t3,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p2()));
+    connect(t4,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p3()));
+    connect(t5,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p4()));
 
     exch->bind(QHostAddress::AnyIPv4,port_125);
 
     connect(exch,SIGNAL(readyRead()),this,SLOT(slot_receive_packet()));
     connect(main_timer,SIGNAL(timeout()),this,SLOT(slot_timer_task()));
+
     main_timer->start(main_clock_works);
 
 }
@@ -58,29 +68,34 @@ Drive125::~Drive125()
 
 void Drive125::slot_timer_task(void)
 {
-    //qDebug()<<"slot_timer_task unv->get_type():"<<unv->get_type();
+
     if(unv->get_type() != unv->nodevice)
     {
         unv->set_id_packet(count);
         exch->writeDatagram(unv->get_adr_send(),unv->get_len_send(),*unv->p_ip,port_125);
+             t1->start(main_clock_works+time_outs);
     }
 
     if(p1->get_type() != p1->nodevice){
         p1->set_id_packet(count);
         exch->writeDatagram(p1->get_adr_send(),p1->get_len_send(),*p1->p_ip,port_125);
+          t2->start(main_clock_works+time_outs);
     }
     if(p2->get_type() != p2->nodevice){
         p2->set_id_packet(count);
         exch->writeDatagram(p2->get_adr_send(),p2->get_len_send(),*p2->p_ip,port_125);
+          t3->start(main_clock_works+time_outs);
     }
     if(p3->get_type() != p3->nodevice){
         p3->set_id_packet(count);
         exch->writeDatagram(p3->get_adr_send(),p3->get_len_send(),*p3->p_ip,port_125);
+          t4->start(main_clock_works+time_outs);
     }
 
     if(p4->get_type() != p4->nodevice){
         p4->set_id_packet(count);
         exch->writeDatagram(p4->get_adr_send(),p4->get_len_send(),*p4->p_ip,port_125);
+          t5->start(main_clock_works+time_outs);
 
     }
     count++;
