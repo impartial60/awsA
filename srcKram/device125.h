@@ -46,8 +46,11 @@ public:
 
     QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
 
-    inline double device_getpos_az()  {return (get_encoder_az_pu(p_receive->enc_angle_pos_az));}
-    inline double device_getpos_elv() {return(get_encoder_um_pu (p_receive->motor_encoder_elv));}
+//    inline double device_getpos_az()  {return (get_encoder_az_pu(p_receive->enc_angle_pos_az));}
+//    inline double device_getpos_elv() {return(get_encoder_um_pu (p_receive->motor_encoder_elv));}
+
+    inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
+    inline double device_getpos_elv() {return(lenze_to_double(p_receive->motor_encoder_elv));}
 
     inline void device_setpos_az (double pos) {p_send->angle_pos_az = double_to_lenze(pos);}
     inline void device_setpos_elv(double pos) {p_send->angle_pos_elv= double_to_lenze(pos);}

@@ -53,7 +53,7 @@ void Device125::slot_udpServer(void)
 
 
     p_receive->enc_angle_pos_az = (int)(tpaz.curr_pos*10000.0);
-    p_receive->enc_angle_pos_elv = (int)(tpum.curr_pos*10000.0);
+    p_receive->motor_encoder_elv = (int)(tpum.curr_pos*10000.0);
 
     //  send_packet
     exch->writeDatagram((char*)p_receive,sizeof(*p_receive),adr,port_tmp);

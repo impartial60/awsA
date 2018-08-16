@@ -22,7 +22,7 @@ p4->ip_combat =   QHostAddress(QString("10.5.0.105"));
 p4->ip_training = QHostAddress(QString("127.0.0.105"));
 
     unv->set_type(unv->unv);
-    unv->set_mode(unv->combat);
+    unv->set_mode(unv->training);
     p1->set_type(p1->nodevice);
     p1->set_mode(p1->training);
     p2->set_type(p2->nodevice);
