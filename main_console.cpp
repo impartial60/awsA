@@ -117,7 +117,7 @@ int main_console(int argc, char *argv[])//main(int argc, char *argv[])
 //    }
 
 
-    //srvDrvInfoA.directrisaAzimuth = drive_unit.// drive //srvDrvInfoA.directrisaAzimuth = 133.0;
+    //srvDrvInfoA.directrisaAzimuth = drive_unit->// drive //srvDrvInfoA.directrisaAzimuth = 133.0;
     srvDrvInfoA.currentAzimuth = srvDrvInfoA.directrisaAzimuth;
     srvDrvInfoA.currentDirectrisaElevationAngle = 6.54;//5.34;
 

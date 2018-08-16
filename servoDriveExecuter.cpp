@@ -27,6 +27,7 @@ void servoDriveExecuter()
     //printf("printf servoDriveExecuter: %d\n", settings->servoDriveDiagnostic);
 
     cntr++;
+   // komKomA.servoDriveSimulation?drive_unit->unv->set_mode(drive_unit->unv->training):drive_unit->unv->set_mode(drive_unit->unv->combat);
 
 //  2018-06-16    if(apyInfoA.rejimRabotiZRK == RejimRabotiZRK::TR_A)
 //  2018-06-16        srvDrvInfoA.targetIndexCY = oficerNaved2Console.guidanceOfficerCmds.targetIndexCY;

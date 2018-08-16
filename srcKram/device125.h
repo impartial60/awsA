@@ -46,8 +46,8 @@ public:
 
     QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
 
-    inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
-    inline double device_getpos_elv() {return(lenze_to_double (p_receive->enc_angle_pos_elv));}
+    inline double device_getpos_az()  {return (get_encoder_az_pu(p_receive->enc_angle_pos_az));}
+    inline double device_getpos_elv() {return(get_encoder_um_pu (p_receive->motor_encoder_elv));}
 
     inline void device_setpos_az (double pos) {p_send->angle_pos_az = double_to_lenze(pos);}
     inline void device_setpos_elv(double pos) {p_send->angle_pos_elv= double_to_lenze(pos);}
@@ -64,10 +64,9 @@ public:
     inline void device_elv_en() {p_send->elv_en = 1;}
     inline void device_elv_dis() {p_send->elv_en = 0;}
 
-    inline void set_mode(int modein) {
+    inline void set_mode(device_mode modein) {
                                      if(mode == modein) return;
-                                      mode = modein;
-
+                                     mode = modein;
                                       if(mode == combat)
                                       {p_receive = &receive;
                                         p_send = &send;
@@ -95,7 +94,7 @@ public:
                                             model_on_of(on);
                                       }
 
-               exch->close();
+          //     exch->close();
                exch->bind(*p_ip,port_125);
 
                                      }
@@ -150,7 +149,11 @@ inline double get_integrator_az(int irg) {return (double)irg/10000.0;}
 inline double get_integrator_um(int irg) {return (double)irg/10000.0;}
 //--------------------------------------------------------------------
 inline double get_encoder_az_pu(int az) {return ((360.0/65536.0)*(double)(az&0x0000ffff));}
-inline double get_encoder_um_pu(int um) {return ((360.0/65536.0)*(double)(um&0x0000ffff));}
+inline double get_encoder_um_pu(int um) {
+                        double tmp = /*((360.0/65536.0)**/(double)(um)/10000.0/*&0x0000ffff*/;
+                        if(tmp >= 330.0) tmp-=360.0;
+                        return tmp;
+}
 
 inline double get_resolver_az_pu(int az) {return (double)az/10000.0;}
 inline double get_resolver_um_pu(int um) {return (double)um/10000.0;}

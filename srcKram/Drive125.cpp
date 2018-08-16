@@ -10,10 +10,10 @@ Drive125::Drive125(QObject *parent) : QObject(parent)
     p3 =new Device125;
     p4 =new Device125;
 
-unv->ip_combat =   QHostAddress(QString("10.5.0.101"));
-unv->ip_training = QHostAddress(QString("127.0.0.101"));
-p1->ip_combat =   QHostAddress(QString("10.5.0.102"));
-p1->ip_training = QHostAddress(QString("127.0.0.102"));
+unv->ip_combat =   QHostAddress(QString("10.5.0.102"));
+unv->ip_training = QHostAddress(QString("127.0.0.102"));
+p1->ip_combat =   QHostAddress(QString("10.5.0.101"));
+p1->ip_training = QHostAddress(QString("127.0.0.101"));
 p2->ip_combat =   QHostAddress(QString("10.5.0.103"));
 p2->ip_training = QHostAddress(QString("127.0.0.103"));
 p3->ip_combat =   QHostAddress(QString("10.5.0.104"));
@@ -22,9 +22,9 @@ p4->ip_combat =   QHostAddress(QString("10.5.0.105"));
 p4->ip_training = QHostAddress(QString("127.0.0.105"));
 
     unv->set_type(unv->unv);
-    unv->set_mode(unv->training);
-    p1->set_type(p1->pusk);
-    p1->set_mode(p1->combat);
+    unv->set_mode(unv->combat);
+    p1->set_type(p1->nodevice);
+    p1->set_mode(p1->training);
     p2->set_type(p2->nodevice);
     p2->set_mode(p2->training);
     p3->set_type(p3->nodevice);
@@ -46,11 +46,11 @@ p4->ip_training = QHostAddress(QString("127.0.0.105"));
         t4->setSingleShot(true);
         t5->setSingleShot(true);
 
-    connect(t1,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_unv()));
-    connect(t2,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p1()));
-    connect(t3,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p2()));
-    connect(t4,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p3()));
-    connect(t5,SIGNAL(sig_timeout()),this,SLOT(slot_timeout_p4()));
+    connect(t1,SIGNAL(timeout()),this,SLOT(slot_timeout_unv()));
+    connect(t2,SIGNAL(timeout()),this,SLOT(slot_timeout_p1()));
+    connect(t3,SIGNAL(timeout()),this,SLOT(slot_timeout_p2()));
+    connect(t4,SIGNAL(timeout()),this,SLOT(slot_timeout_p3()));
+    connect(t5,SIGNAL(timeout()),this,SLOT(slot_timeout_p4()));
 
     exch->bind(QHostAddress::AnyIPv4,port_125);
 
