@@ -1,4 +1,4 @@
-#include "externA.h"
+ #include "externA.h"
 #include "srcKram/Drive125.h"
 
 //#define real_work
@@ -27,7 +27,7 @@ void servoDriveExecuter()
     //printf("printf servoDriveExecuter: %d\n", settings->servoDriveDiagnostic);
 
     cntr++;
-   // komKomA.servoDriveSimulation?drive_unit->unv->set_mode(drive_unit->unv->training):drive_unit->unv->set_mode(drive_unit->unv->combat);
+    komKomA.servoDriveSimulation?drive_unit->unv->set_mode(drive_unit->unv->training):drive_unit->unv->set_mode(drive_unit->unv->combat);
 
 //  2018-06-16    if(apyInfoA.rejimRabotiZRK == RejimRabotiZRK::TR_A)
 //  2018-06-16        srvDrvInfoA.targetIndexCY = oficerNaved2Console.guidanceOfficerCmds.targetIndexCY;
@@ -123,7 +123,7 @@ void servoDriveExecuter()
                 //p1.pos_cmd = p1.curr_pos + oficerNaved2Console.guidanceOfficerCmds.servoDriveDelta[AZIMUTH];    //  2018-08-07
                 double newAz = convert360angle2PlusMinus180(srvDrvInfoA.directrisaAzimuth + oficerNaved2Console.guidanceOfficerCmds.servoDriveDelta[AZIMUTH]);
                 drive_unit->unv->device_setpos_az(newAz);   //  2018-05-08
-                srvDrvInfoA.directrisaAzimuth = drive_unit->unv->device_getpos_az();   //srvDrvInfoA.directrisaAzimuth = p1.pos_cmd; //  2018-08-07
+                srvDrvInfoA.directrisaAzimuth = newAz;// исправлено Ворониным 2018-08-17 //drive_unit->unv->device_getpos_az();   //srvDrvInfoA.directrisaAzimuth = p1.pos_cmd; //  2018-08-07
 
                 qDebug()<<"servoDriveExecuter отработка клика мыши по шкале азимута наведение newAz:"<<newAz<<"komKomA.servoDriveSimulation:"<<komKomA.servoDriveSimulation;
 
@@ -152,7 +152,7 @@ void servoDriveExecuter()
                    qDebug()<<"servoDriveExecuter отработка клика мыши по шкале азимута командиром newAz:"<<newAz<<"komKomA.servoDriveSimulation:"<<komKomA.servoDriveSimulation;
 
                   drive_unit->unv->device_setpos_az(newAz);  //  2018-05-08
-                  srvDrvInfoA.directrisaAzimuth = drive_unit->unv->device_getpos_az();                                                             //  2018-05-08
+                  srvDrvInfoA.directrisaAzimuth = newAz;    // исправлено Ворониным 2018-08-17 drive_unit->unv->device_getpos_az();     //  2018-05-08
                 }
                 else
                     if(komKomA.srv[AZIMUTH].executeCounter / 10 < srvDrvInfoA.komJustExecuteCounter[AZIMUTH])   // случай когда АРМ командира был перезапущен
@@ -192,10 +192,11 @@ void servoDriveExecuter()
             //  2018-06-16  if(oficerNaved2Console.guidanceOfficerCmds.rejimPoiskaSNR == RejimPoiskaSNR::POISK_BSP || oficerNaved2Console.guidanceOfficerCmds.rejimPoiskaSNR == RejimPoiskaSNR::POISK_MSP)  // офицер наведения включил поиск
             //  2018-06-16  {
                 if(apyInfoA.rejimPoiskaSNR == RejimPoiskaSNR::POISK_BSP || apyInfoA.rejimPoiskaSNR == RejimPoiskaSNR::POISK_MSP) // сканирование продолжается
-                {
-                    drive_unit->unv->device_setpos_az(srvDrvInfoA.directrisaAzimuth + directFactor * srvDrvInfoA.azimuthScanSectorHalfWidth);//p1.pos_cmd = srvDrvInfoA.directrisaAzimuth + directFactor * srvDrvInfoA.azimuthScanSectorHalfWidth;
-
-                    if(fabs(convert360angle2PlusMinus180(drive_unit->unv->device_getpos_az() - srvDrvInfoA.currentAzimuth)) < 0.1)  // дошли до границы сектора - возвращаемся
+                {                    
+                    float newAz = srvDrvInfoA.directrisaAzimuth + directFactor * srvDrvInfoA.azimuthScanSectorHalfWidth;// исправлено Ворониным 2018-08-17
+                    drive_unit->unv->device_setpos_az(newAz);// исправлено Ворониным 2018-08-17
+                    // исправлено Ворониным 2018-08-17 if(fabs(convert360angle2PlusMinus180(drive_unit->unv->device_getpos_az() - srvDrvInfoA.currentAzimuth)) < 0.1)  // дошли до границы сектора - возвращаемся
+                    if(fabs(convert360angle2PlusMinus180(newAz - srvDrvInfoA.currentAzimuth)) < 0.1)  // дошли до границы сектора - возвращаемся
                     {
                         unvClockwiseScanDirection = !unvClockwiseScanDirection;
 

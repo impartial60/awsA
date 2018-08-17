@@ -17,16 +17,78 @@ Device125::~Device125()
 {
 
 }
-
+void Device125::set_on_device(void)
+{
+     state=0;
+}
 void Device125::sync(void)
 {
+    if(mode == combat){
+    switch(state)
+    {case 0:
+        model_on_of(off);
+        state++;
+        break;
+    case 1:
+        device_az_zero_intg(on);
+        device_elv_zero_intg(on);
+        state++;
+        break;
+    case 2:
+        device_az_on_intg(on);
+        device_elv_on_intg(on);
+        state++;
+        break;
+    case 3:
+        device_az_zero_intg(off);
+        device_elv_zero_intg(off);
+        state++;
+        break;
+    case 4:
+        device_az_en_intg(on);
+        device_elv_en_intg(on);
+        state++;
+        break;
+    default:
+        break;}
+    }
+    else if(mode == training)
+    {
+        switch(state)
+        {case 0:
+            model_on_of(on);
+            state++;
+            break;
+        case 1:
+            device_az_en_intg(off);
+            device_elv_en_intg(off);
+            state++;
+            break;
+        case 2:
+            device_az_on_intg(off);
+            device_elv_on_intg(off);
+            state++;
+            break;
+        default:
+            break;}
+        }
+        else;
+    }
 
-}
 void Device125::slot_timeout(void)
 {
 emit sig_timeout();
 }
 
+uint32_t Device125::get_parameter_lenze(int parameter)
+{
+
+}
+
+uint32_t Device125::set_parameter_lenze(int parameter,int parm)
+{
+
+}
 
 
 void Device125::slot_udpServer(void)
@@ -62,7 +124,7 @@ void Device125::slot_udpServer(void)
 old_ID_packet = send_tmp.ID_packet;
 }
 
-void Device125::tp_update()
+void Device125::tp_update(void)
 {
 
         double max_dv, tiny_dp, pos_err, vel_req,period=rt.interval();

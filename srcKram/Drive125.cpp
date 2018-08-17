@@ -21,6 +21,13 @@ p3->ip_training = QHostAddress(QString("127.0.0.104"));
 p4->ip_combat =   QHostAddress(QString("10.5.0.105"));
 p4->ip_training = QHostAddress(QString("127.0.0.105"));
 
+unv->exch->bind(unv->ip_training,port_125);
+p1->exch->bind(p1->ip_training,port_125);
+p2->exch->bind(p2->ip_training,port_125);
+p3->exch->bind(p4->ip_training,port_125);
+p4->exch->bind(p4->ip_training,port_125);
+
+
     unv->set_type(unv->unv);
     unv->set_mode(unv->training);
     p1->set_type(p1->nodevice);
@@ -58,6 +65,7 @@ p4->ip_training = QHostAddress(QString("127.0.0.105"));
     connect(main_timer,SIGNAL(timeout()),this,SLOT(slot_timer_task()));
 
     main_timer->start(main_clock_works);
+    unv->set_on_device();
 
 }
 Drive125::~Drive125()
@@ -115,19 +123,24 @@ void Drive125::slot_receive_packet(void)
         {
    if(adr == *unv->p_ip)
    {memcpy(unv->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-        }
+   unv->sync();
+   }
     if(adr == *p1->p_ip)
-    {memcpy(p1->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-        }
+    {memcpy(p1->get_adr_receive(),p1->get_tmp_adr_receive(),p1->get_tmp_len_receive());
+    p1->sync();
+    }
       if(adr == *p2->p_ip)
-      {memcpy(p2->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-        }
+      {memcpy(p2->get_adr_receive(),p2->get_tmp_adr_receive(),p2->get_tmp_len_receive());
+      p2->sync();
+      }
         if(adr == *p3->p_ip)
-        {memcpy(p3->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-            }
+        {memcpy(p3->get_adr_receive(),p3->get_tmp_adr_receive(),p3->get_tmp_len_receive());
+        p3->sync();
+        }
           if(adr == *p4->p_ip)
-          {memcpy(p4->get_adr_receive(),unv->get_tmp_adr_receive(),unv->get_tmp_len_receive());
-            }
+          {memcpy(p4->get_adr_receive(),p4->get_tmp_adr_receive(),p4->get_tmp_len_receive());
+          p4->sync();
+          }
 
 
     }

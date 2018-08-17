@@ -19,18 +19,16 @@
 
 #define max_vel_az_unv 18.0
 #define max_vel_um_unv 15.0
-#define max_acc_az_unv 3.0
-#define max_acc_az_unv 3.0
+#define max_acc_az_unv 7.0
+#define max_acc_um_unv 7.0
 
-#define cmax_vel_az  18.0
-#define cmax_acc_az  5.0
-#define cmax_vel_um  15.0
-#define cmax_acc_um  5.0
 
 #define max_vel_az_p 7.0
 #define max_vel_um_p 4.0
 #define max_acc_az_p 3.0
 #define max_acc_um_p 3.0
+
+#define test_pult_kprd
 
 class Device125:public QObject
 {
@@ -43,63 +41,72 @@ public:
     enum device_type {nouse_t,unv,pusk,nodevice};
     enum device_mode {nouse_m,combat,training};
     enum pult_status {nouse_p,combat_mode,manual_mode,auto_mode};
+    enum on_off {off,on};
 
     QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
+    QUdpSocket *exch;
 
-//    inline double device_getpos_az()  {return (get_encoder_az_pu(p_receive->enc_angle_pos_az));}
-//    inline double device_getpos_elv() {return(get_encoder_um_pu (p_receive->motor_encoder_elv));}
+#ifdef test_pult_kprd
 
+    inline double device_getpos_az()  {
+            if(mode == combat)
+               return (get_encoder_az_pu(p_receive->enc_angle_pos_az));
+                else
+                    return (lenze_to_double(p_receive->enc_angle_pos_az));
+                    }
+    inline double device_getpos_elv() {
+            if(mode == combat)
+                return(get_encoder_um_pu (p_receive->motor_encoder_elv));
+                else
+                    return (lenze_to_double(p_receive->motor_encoder_elv));
+                       }
+#else
     inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
     inline double device_getpos_elv() {return(lenze_to_double(p_receive->motor_encoder_elv));}
-
+#endif
     inline void device_setpos_az (double pos) {p_send->angle_pos_az = double_to_lenze(pos);}
     inline void device_setpos_elv(double pos) {p_send->angle_pos_elv= double_to_lenze(pos);}
 
-    inline void device_az_on() {p_send->az_on = 1;}
-    inline void device_az_off() {p_send->az_on = 0;}
+    inline void device_az_on_intg(on_off m) {p_send->az_on = m;}
 
-    inline void device_elv_on() {p_send->elv_on = 1;}
-    inline void device_elv_off() {p_send->elv_on = 0;}
+    inline void device_elv_on_intg(on_off m) {p_send->elv_on = m;}
 
-    inline void device_az_en() {p_send->az_en = 1;}
-    inline void device_az_dis() {p_send->az_en = 0;}
+    inline void device_az_en_intg(on_off m) {p_send->az_en = m;}
 
-    inline void device_elv_en() {p_send->elv_en = 1;}
-    inline void device_elv_dis() {p_send->elv_en = 0;}
+    inline void device_elv_en_intg(on_off m) {p_send->elv_en = m;}
+
+    inline void device_az_zero_intg(on_off m) {p_send->az_en = m;}
+
+    inline void device_elv_zero_intg(on_off m) {p_send->elv_en =m ;}
+
 
     inline void set_mode(device_mode modein) {
-                                     if(mode == modein) return;
+         if(mode == modein) return;
                                      mode = modein;
                                       if(mode == combat)
                                       {p_receive = &receive;
                                         p_send = &send;
                                          p_ip = &ip_combat;
-                                      model_on_of(off);
+
                                       }
                                         else {p_receive = &receive_training;
                                                p_send = &send_training;
                                                 p_ip = &ip_training;
 
-
-                                      if(type == unv)
-                                          set_parameter_model(cmax_vel_az,
-                                                              cmax_acc_az,
-                                                              cmax_vel_um,
-                                                              cmax_acc_um
+                                                if(type == unv)
+                                          set_parameter_model(max_vel_az_unv,
+                                                              max_acc_az_unv,
+                                                              max_vel_um_unv,
+                                                              max_acc_um_unv
                                                       );
                                       else
                                          set_parameter_model(max_vel_az_p,
                                                              max_acc_az_p,
                                                              max_vel_um_p,
                                                              max_acc_um_p
-                                                  );
-
-                                            model_on_of(on);
+                                                  );        
                                       }
-
-          //     exch->close();
-               exch->bind(*p_ip,port_125);
-
+                    set_on_device();
                                      }
     inline int get_mode(void){return mode;}
 
@@ -118,6 +125,12 @@ public:
     inline int get_tmp_len_receive(void) {return sizeof(receive_tmp);}
 
     inline void set_id_packet(int pk) {p_send->ID_packet = pk;}
+    inline pult_status get_pult_mode(void) {return (pult_status)p_receive->status_pult;}
+
+           void sync(void);
+           uint32_t get_parameter_lenze(int parameter);
+           uint32_t set_parameter_lenze(int parameter,int parm);
+           void set_on_device(void);
 
 public slots:
 
@@ -128,17 +141,17 @@ signals:
 void sig_timeout(void);
 
 private:
-
+    int state;
     uint16_t port_dev = port_125;
     int type=nodevice;
     int mode=nouse_m;
 
     uint32_t old_ID_packet;
-    QUdpSocket *exch;
     QTimer  *timer;
     ClockRealTime rt;
 
-        void sync(void);
+
+
 inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
 inline double lenze_to_double(int32_t n){return (double(n)/10000.0);}
 
@@ -216,8 +229,8 @@ inline int32_t double_to_lenze_eps_pu_poly( double n) {return ((int)((n-polynom(
         sc_UV11_on:1,//bit 16           Включение/выключение сканнера УВ11
 
         az_code_read:1,//Бит 17	 	Признак записи для кодов (азимут).
-        elv_code_read:1,//Бит 18	 	Признак записи для кодов (угол места).
-        not_used:13;        //bit 17-31
+        elv_code_read:1;//Бит 18	 	Признак записи для кодов (угол места).
+    //    not_used:13;        //bit 17-31
 
     ///*70*/const char ID_string[22] = {'K','r','a','m','a','r','e','n','k','o','S','h','c','h','e','r','b','a','k','o','v',0};//{"КрамаренкоЩербаков"};
 
@@ -266,7 +279,7 @@ inline int32_t double_to_lenze_eps_pu_poly( double n) {return ((int)((n-polynom(
          k_umV:1,   //14                //угол места предел низ
          k_umn:1,   //15                //угол места предел верх
          b_otb:6,  //16-21                 //Биты с ОТБ 6 только для пушек
-        status_pult:2;// status pult
+        status_pult:2;// 22-23 status pult
 
     //char ID_string[22] = {'S','h','c','h','e','r','b','a','k','o','v','K','r','a','m','a','r','e','n','k','o',0};//{"КрамаренкоЩербаков"};
 
@@ -289,10 +302,10 @@ inline void set_parameter_model(double max_vel_az,double max_acc_az,double max_v
     tpum.max_vel = max_vel_um;tpum.max_acc = max_acc_um;
 
 }
-enum on_off {off,on};
-inline void model_on_of(int md) {tpaz.enable = md;tpum.enable = md;}
 
-void tp_update(/*tp_t *tp, double period*/);
+inline void model_on_of(on_off md) {tpaz.enable = md;tpum.enable = md;}
+
+void tp_update(void);
 };// Device125;
 
 #endif // DEVICE125_H
