@@ -17,16 +17,37 @@ Device125::~Device125()
 {
 
 }
-void Device125::set_on_device(void)
+void Device125::set_on_device(void)//sync
 {
      state=0;
 }
 void Device125::sync(void)
 {
-    if(mode == combat){
+ // qDebug()<<count_switch;
+    int tmp_pm=get_pult_mode();
+    if(old_pult_mode != tmp_pm)
+    {
+       if(++count_switch > 10)
+       {
+     if(tmp_pm == combat_mode)
+         state=0;
+        old_pult_mode = tmp_pm;
+        count_switch = 0;
+          }
+
+    }
+
+    if((mode == combat) && (old_pult_mode == combat_mode))
+    {
     switch(state)
     {case 0:
         model_on_of(off);
+        device_az_zero_intg(off);
+        device_elv_zero_intg(off);
+        device_az_on_intg(off);
+        device_elv_on_intg(off);
+        device_az_en_intg(off);
+        device_elv_en_intg(off);
         state++;
         break;
     case 1:
@@ -42,6 +63,10 @@ void Device125::sync(void)
     case 3:
         device_az_zero_intg(off);
         device_elv_zero_intg(off);
+        zero_az = device_getpos_az();
+        zero_elv = device_getpos_elv();
+        device_setpos_az(old_pos_az);//new sync,recalculate
+        device_setpos_elv(old_pos_elv);
         state++;
         break;
     case 4:
@@ -60,13 +85,15 @@ void Device125::sync(void)
             state++;
             break;
         case 1:
-            device_az_en_intg(off);
-            device_elv_en_intg(off);
+      //      device_az_en_intg(off);
+      //      device_elv_en_intg(off);
             state++;
             break;
         case 2:
-            device_az_on_intg(off);
-            device_elv_on_intg(off);
+      //      device_az_on_intg(off);
+      //      device_elv_on_intg(off);
+          //  tpaz.curr_pos = zero_az;
+          //  tpum.curr_pos = zero_elv;
             state++;
             break;
         default:

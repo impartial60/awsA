@@ -30,6 +30,10 @@
 
 #define test_pult_kprd
 
+#define elv_limit_up 73.0
+#define elv_limit_dn -2.0
+
+
 class Device125:public QObject
 {
    Q_OBJECT
@@ -64,8 +68,36 @@ public:
     inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
     inline double device_getpos_elv() {return(lenze_to_double(p_receive->motor_encoder_elv));}
 #endif
-    inline void device_setpos_az (double pos) {p_send->angle_pos_az = double_to_lenze(pos);}
-    inline void device_setpos_elv(double pos) {p_send->angle_pos_elv= double_to_lenze(pos);}
+    inline void device_setpos_az (double pos) {
+        if(pos >360.0 && pos < -360.0) return;
+        if(mode == combat)
+        {
+        old_pos_az = pos;
+      double tmp;
+      tmp = pos-zero_az;
+        //   tmp = 360.0 + pos;
+       // if(tmp >= 360.0) tmp = tmp - 360.0;
+        //  tmp = tmp-zero_az;
+         // if(tmp >= 180.0) tmp=180.0-tmp;
+         qDebug()<<"device125 az "<<pos<<" "<<tmp<<" "<<" "<<zero_az<<" "<< p_send->ID_packet;
+        p_send->angle_pos_az = double_to_lenze(tmp);
+        }
+        else p_send->angle_pos_az = double_to_lenze(pos);
+
+    }
+
+    inline void device_setpos_elv(double pos) {
+          if(pos > elv_limit_up && pos < elv_limit_dn) return;
+          if(mode == combat)
+          {
+        old_pos_elv = pos;
+        double tmp;
+        tmp = pos-zero_elv;
+     //   qDebug()<<"device125 um "<<pos<<" "<< p_send->ID_packet;
+        p_send->angle_pos_elv= double_to_lenze(tmp);
+          }
+          else p_send->angle_pos_elv= double_to_lenze(pos);
+    }
 
     inline void device_az_on_intg(on_off m) {p_send->az_on = m;}
 
@@ -75,9 +107,9 @@ public:
 
     inline void device_elv_en_intg(on_off m) {p_send->elv_en = m;}
 
-    inline void device_az_zero_intg(on_off m) {p_send->az_en = m;}
+    inline void device_az_zero_intg(on_off m) {p_send->az_int_clear = m;}
 
-    inline void device_elv_zero_intg(on_off m) {p_send->elv_en =m ;}
+    inline void device_elv_zero_intg(on_off m) {p_send->elv_int_clear =m ;}
 
 
     inline void set_mode(device_mode modein) {
@@ -92,7 +124,8 @@ public:
                                         else {p_receive = &receive_training;
                                                p_send = &send_training;
                                                 p_ip = &ip_training;
-
+                                              //  memset(&tpaz,0,sizeof(tpaz));
+                                              //  memset(&tpum,0,sizeof(tpum));
                                                 if(type == unv)
                                           set_parameter_model(max_vel_az_unv,
                                                               max_acc_az_unv,
@@ -149,8 +182,12 @@ private:
     uint32_t old_ID_packet;
     QTimer  *timer;
     ClockRealTime rt;
-
-
+    double zero_az;
+    double zero_elv;
+    double old_pos_az;
+    double old_pos_elv;
+    int old_pult_mode;
+    int count_switch;
 
 inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
 inline double lenze_to_double(int32_t n){return (double(n)/10000.0);}
