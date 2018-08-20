@@ -75,7 +75,7 @@ public:
         old_pos_az = pos;
       double tmp;
       tmp = pos-zero_az;
-        //   tmp = 360.0 + pos;
+            //   tmp = 360.0 + pos;
        // if(tmp >= 360.0) tmp = tmp - 360.0;
         //  tmp = tmp-zero_az;
          // if(tmp >= 180.0) tmp=180.0-tmp;
