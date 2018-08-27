@@ -170,7 +170,9 @@ void servoDriveExecuter()
                 if(komKomA.srv[ELEVANG].executeCounter / 10 > srvDrvInfoA.komJustExecuteCounter[ELEVANG])  // это действительно новый клик
                 {                    
                     srvDrvInfoA.komJustExecuteCounter[ELEVANG] = komKomA.srv[ELEVANG].executeCounter / 10;
-                    drive_unit->unv->device_setpos_elv(drive_unit->unv->device_getpos_elv() + komKomA.srv[ELEVANG].delta);//p2.pos_cmd = p2.curr_pos + komKomA.srv[ELEVANG].delta;
+                   // drive_unit->unv->device_setpos_elv(drive_unit->unv->device_getpos_elv() + komKomA.srv[ELEVANG].delta);//p2.pos_cmd = p2.curr_pos + komKomA.srv[ELEVANG].delta;
+                    drive_unit->unv->device_setpos_elv(srvDrvInfoA.currentDirectrisaElevationAngle + komKomA.srv[ELEVANG].delta);//p2.pos_cmd = p2.curr_pos + komKomA.srv[ELEVANG].delta;
+
                 }
                 else
                     if(komKomA.srv[ELEVANG].executeCounter / 10 < srvDrvInfoA.komJustExecuteCounter[ELEVANG])   // случай когда АРМ командира был перезапущен

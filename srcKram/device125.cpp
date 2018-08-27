@@ -8,8 +8,10 @@ Device125::Device125(QObject *parent) : QObject(parent)
    timer->setSingleShot(true);
    exch = new QUdpSocket;
    connect(exch,SIGNAL(readyRead()),this,SLOT(slot_udpServer()));
-
     rt.start();
+    memset(&tpaz,0,sizeof(tpaz));
+    memset(&tpum,0,sizeof(tpum));
+
 
 }
 
@@ -17,10 +19,74 @@ Device125::~Device125()
 {
 
 }
+
+#ifdef test_pult_kprd
+inline double Device125::device_getpos_az()  {
+    double tmp;
+        if(mode == combat)
+           tmp = (get_encoder_az_pu(p_receive->enc_angle_pos_az));
+            else
+                tmp = (lenze_to_double(p_receive->enc_angle_pos_az));
+        return tmp;// > 180.0 ? tmp - 360.0 : tmp;
+                }
+inline double Device125::device_getpos_elv() {
+        if(mode == combat)
+            return(get_encoder_um_pu (p_receive->motor_encoder_elv));
+            else
+                return (lenze_to_double(p_receive->motor_encoder_elv));
+                   }
+#else
+inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
+inline double device_getpos_elv() {return(lenze_to_double(p_receive->motor_encoder_elv));}
+#endif
+
+ inline void Device125::device_setpos_az (double pos) {
+    if(pos >360.0 || pos < -360.0) return;
+    double tmp=pos,tmpoz,tmpz;
+    static double oldz;
+    qDebug()<<"device125 az 0"<<pos<<" tmp "<<tmp<<" oldz "<<oldz<<" zero_az "<<zero_az<<" "<< p_send->ID_packet;
+//      tmp=fabs(tmp-old_pos_az)<180.0 ? tmp-old_pos_az : tmp-old_pos_az < 0.0 ? 360.0+(tmp-old_pos_az):(tmp-old_pos_az)-360.0;
+
+    if(oldz>0.0)
+    {if(pos<0.0) {tmpoz = 180.0-oldz; tmpz = 180 + pos;
+            if(tmpoz + tmpz < 180) tmp = oldz + tmpoz + tmpz;}
+     }
+    else
+    {if(pos>0.0) {tmpoz = 180.0+oldz; tmpz = 180 - pos;
+            if(tmpoz + tmpz < 180) tmp = oldz - (tmpoz + tmpz);}
+     }
+
+  //  if(tmp < 0) tmp = 360.0+tmp;
+
+        if(mode == combat)
+            tmp = tmp-zero_az;
+
+      p_send->angle_pos_az = double_to_lenze(tmp);
+     oldz = tmp;
+    qDebug()<<"device125 az 1"<<pos<<" tmp "<<tmp<<" oldz "<<oldz<<" zero_az "<<zero_az<<" "<< p_send->ID_packet;
+}
+
+inline void Device125::device_setpos_elv(double pos) {
+       double tmp;
+      if(pos > elv_limit_up || pos < elv_limit_dn) return;
+      if(mode == combat)
+      {
+
+
+    tmp = pos-zero_elv;
+
+    p_send->angle_pos_elv= double_to_lenze(tmp);
+      }
+      else p_send->angle_pos_elv= double_to_lenze(pos);
+      old_pos_elv = pos;
+    qDebug()<<"device125 um "<<pos<<" "<<tmp<<" "<<" "<<zero_elv<<" "<< p_send->ID_packet;
+}
+
 void Device125::set_on_device(void)//sync
 {
      state=0;
 }
+
 void Device125::sync(void)
 {
  // qDebug()<<count_switch;
@@ -29,12 +95,10 @@ void Device125::sync(void)
     {
        if(++count_switch > 10)
        {
-     if(tmp_pm == combat_mode)
-         state=0;
+     if(tmp_pm == combat_mode)  state=0;
         old_pult_mode = tmp_pm;
         count_switch = 0;
           }
-
     }
 
     if((mode == combat) && (old_pult_mode == combat_mode))
@@ -67,11 +131,13 @@ void Device125::sync(void)
         zero_elv = device_getpos_elv();
         device_setpos_az(old_pos_az);//new sync,recalculate
         device_setpos_elv(old_pos_elv);
+   //     p_send->sync_int_um =1;
         state++;
         break;
     case 4:
         device_az_en_intg(on);
         device_elv_en_intg(on);
+ //       p_send->sync_int_um =1;
         state++;
         break;
     default:
@@ -85,6 +151,7 @@ void Device125::sync(void)
             state++;
             break;
         case 1:
+
       //      device_az_en_intg(off);
       //      device_elv_en_intg(off);
             state++;
@@ -141,8 +208,8 @@ void Device125::slot_udpServer(void)
         tpum.pos_cmd = (double)p_send->angle_pos_elv/10000.0;
 
 
-    p_receive->enc_angle_pos_az = (int)(tpaz.curr_pos*10000.0);
-    p_receive->motor_encoder_elv = (int)(tpum.curr_pos*10000.0);
+    p_receive->enc_angle_pos_az = (int)(tpaz.curr_pos_enc*10000.0);
+    p_receive->motor_encoder_elv = (int)(tpum.curr_pos_enc*10000.0);
 
     //  send_packet
     exch->writeDatagram((char*)p_receive,sizeof(*p_receive),adr,port_tmp);
@@ -204,6 +271,8 @@ void Device125::tp_update(void)
         }
 
         tpaz.curr_pos += tpaz.curr_vel * period;
+
+        tpaz.curr_pos_enc = tpaz.curr_pos;// < 0.0 ? 360.0 - tpaz.curr_pos : tpaz.curr_pos;
 //---------------------------um
         tpum.active = 0;
 
@@ -253,6 +322,6 @@ void Device125::tp_update(void)
         }
 
         tpum.curr_pos += tpum.curr_vel * period;
-
+        tpum.curr_pos_enc = tpum.curr_pos;// < 0.0 ? 360.0 - tpum.curr_pos : tpum.curr_pos;
 
 }

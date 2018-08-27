@@ -23,10 +23,15 @@
 #define max_acc_um_unv 7.0
 
 
-#define max_vel_az_p 7.0
-#define max_vel_um_p 4.0
-#define max_acc_az_p 3.0
-#define max_acc_um_p 3.0
+//#define max_vel_az_p 7.0
+//#define max_vel_um_p 4.0
+//#define max_acc_az_p 3.0
+//#define max_acc_um_p 3.0
+
+#define max_vel_az_p 18.0
+#define max_vel_um_p 15.0
+#define max_acc_az_p 15.0
+#define max_acc_um_p 15.0
 
 #define test_pult_kprd
 
@@ -50,54 +55,11 @@ public:
     QHostAddress ip_combat,ip_training,ip_tmp,*p_ip;
     QUdpSocket *exch;
 
-#ifdef test_pult_kprd
+     void device_setpos_az (double pos);
+     void device_setpos_elv (double pos);
 
-    inline double device_getpos_az()  {
-            if(mode == combat)
-               return (get_encoder_az_pu(p_receive->enc_angle_pos_az));
-                else
-                    return (lenze_to_double(p_receive->enc_angle_pos_az));
-                    }
-    inline double device_getpos_elv() {
-            if(mode == combat)
-                return(get_encoder_um_pu (p_receive->motor_encoder_elv));
-                else
-                    return (lenze_to_double(p_receive->motor_encoder_elv));
-                       }
-#else
-    inline double device_getpos_az()  {return (lenze_to_double(p_receive->enc_angle_pos_az));}
-    inline double device_getpos_elv() {return(lenze_to_double(p_receive->motor_encoder_elv));}
-#endif
-    inline void device_setpos_az (double pos) {
-        if(pos >360.0 && pos < -360.0) return;
-        if(mode == combat)
-        {
-        old_pos_az = pos;
-      double tmp;
-      tmp = pos-zero_az;
-            //   tmp = 360.0 + pos;
-       // if(tmp >= 360.0) tmp = tmp - 360.0;
-        //  tmp = tmp-zero_az;
-         // if(tmp >= 180.0) tmp=180.0-tmp;
-         qDebug()<<"device125 az "<<pos<<" "<<tmp<<" "<<" "<<zero_az<<" "<< p_send->ID_packet;
-        p_send->angle_pos_az = double_to_lenze(tmp);
-        }
-        else p_send->angle_pos_az = double_to_lenze(pos);
-
-    }
-
-    inline void device_setpos_elv(double pos) {
-          if(pos > elv_limit_up && pos < elv_limit_dn) return;
-          if(mode == combat)
-          {
-        old_pos_elv = pos;
-        double tmp;
-        tmp = pos-zero_elv;
-     //   qDebug()<<"device125 um "<<pos<<" "<< p_send->ID_packet;
-        p_send->angle_pos_elv= double_to_lenze(tmp);
-          }
-          else p_send->angle_pos_elv= double_to_lenze(pos);
-    }
+    double device_getpos_az();
+    double device_getpos_elv();
 
     inline void device_az_on_intg(on_off m) {p_send->az_on = m;}
 
@@ -182,12 +144,12 @@ private:
     uint32_t old_ID_packet;
     QTimer  *timer;
     ClockRealTime rt;
-    double zero_az;
-    double zero_elv;
-    double old_pos_az;
-    double old_pos_elv;
-    int old_pult_mode;
-    int count_switch;
+    double zero_az=0.0;
+    double zero_elv=0.0;
+    double old_pos_az=0.0;
+    double old_pos_elv=0.0;
+    int old_pult_mode=0;
+    int count_switch=0;
 
 inline int32_t double_to_lenze(double n){return ((int)(n*10000.0));}
 inline double lenze_to_double(int32_t n){return (double(n)/10000.0);}
@@ -266,8 +228,10 @@ inline int32_t double_to_lenze_eps_pu_poly( double n) {return ((int)((n-polynom(
         sc_UV11_on:1,//bit 16           Включение/выключение сканнера УВ11
 
         az_code_read:1,//Бит 17	 	Признак записи для кодов (азимут).
-        elv_code_read:1;//Бит 18	 	Признак записи для кодов (угол места).
-    //    not_used:13;        //bit 17-31
+        elv_code_read:1,//Бит 18	 	Признак записи для кодов (угол места).
+        sync_int_az:1,  //Бит 19        синхронизация энкодера и резольвера азимута
+        sync_int_um:1;  //Бит 20        синхронизация энкодера и резольвера угла места
+        //    not_used:13;        //bit 17-31
 
     ///*70*/const char ID_string[22] = {'K','r','a','m','a','r','e','n','k','o','S','h','c','h','e','r','b','a','k','o','v',0};//{"КрамаренкоЩербаков"};
 
@@ -327,8 +291,9 @@ inline int32_t double_to_lenze_eps_pu_poly( double n) {return ((int)((n-polynom(
     double pos_cmd;		/* Позиция в которую необходимо переместиться */
     double max_vel;		/* Лимит скорости */
     double max_acc;		/* Лимит ускорения */
-    int enable;		/* Если "0" движение останавливается "ASAP" */
+    int enable;         /* Если "0" движение останавливается "ASAP" */
     double curr_pos;	/* Текущая позиция */
+    double curr_pos_enc;/* Текущая позиция по энкодеру */
     double curr_vel;	/* Текущая скорость */
     int active;		/* "1" если продолжается движение */
     } tpaz,tpum;
